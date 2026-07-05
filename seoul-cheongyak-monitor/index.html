@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서울·수도권 청약 모니터</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; background:#f7f7f5; color:#1a1a1a; font-size:14px; line-height:1.5; }
+.wrap { max-width:1000px; margin:0 auto; padding:20px 16px 60px; }
+h1 { font-size:20px; margin:0 0 4px; }
+.sub { color:#6b6b6b; font-size:13px; margin-bottom:14px; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.btn { border:1px solid #1a1a1a; background:#1a1a1a; color:#fff; border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; font-weight:600; }
+.btn.ghost { background:#fff; color:#1a1a1a; }
+.btn:hover { opacity:.88; }
+.profile-status { font-size:12px; color:#888; }
+.controls { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; background:#fff; border:1px solid #e5e5e2; border-radius:10px; padding:12px 14px; margin-bottom:16px; }
+.group { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.group .label { font-size:12px; color:#888; font-weight:600; margin-right:2px; }
+.chip { display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:999px; border:1px solid #d8d8d4; background:#fff; cursor:pointer; font-size:13px; user-select:none; transition:all .12s; }
+.chip.on { background:#1a1a1a; color:#fff; border-color:#1a1a1a; }
+.chip:hover { border-color:#999; }
+.stat { display:flex; gap:18px; margin-bottom:12px; flex-wrap:wrap; align-items:baseline; }
+.stat div { font-size:13px; color:#555; }
+.stat b { font-size:16px; color:#1a1a1a; }
+table { width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; border:1px solid #e5e5e2; }
+th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #f0f0ee; vertical-align:top; }
+th { background:#fafafa; font-size:12px; color:#888; font-weight:600; white-space:nowrap; }
+td { font-size:13px; }
+tr:last-child td { border-bottom:none; }
+tbody tr { cursor:pointer; }
+tbody tr:hover { background:#fafafe; }
+.name { font-weight:600; color:#1a1a1a; }
+.name .arr { color:#3b4b9e; font-weight:400; font-size:12px; margin-left:4px; }
+.meta { color:#888; font-size:12px; margin-top:2px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:600; white-space:nowrap; }
+.b-open { background:#e7f5ec; color:#1a7d4b; }
+.b-soon { background:#fff3e0; color:#b35c00; }
+.b-done { background:#f0f0f0; color:#999; }
+.rtag { display:inline-block; padding:1px 7px; border-radius:5px; background:#eef2ff; color:#3b4b9e; font-size:12px; font-weight:600; }
+.reg { display:inline-block; padding:1px 6px; border-radius:5px; background:#fdecec; color:#c0392b; font-size:11px; font-weight:700; margin-left:4px; }
+.gubun { color:#666; font-size:12px; }
+.empty { text-align:center; padding:40px; color:#999; }
+.foot { margin-top:16px; font-size:12px; color:#999; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:flex-start; justify-content:center; padding:30px 14px; overflow-y:auto; z-index:50; }
+.overlay.show { display:flex; }
+.modal { background:#fff; border-radius:14px; width:100%; max-width:660px; padding:22px; box-shadow:0 12px 40px rgba(0,0,0,.2); }
+.modal h2 { font-size:18px; margin:0 0 2px; }
+.modal .mclose { float:right; border:none; background:none; font-size:22px; cursor:pointer; color:#999; line-height:1; }
+.sec { border-top:1px solid #eee; margin-top:16px; padding-top:14px; }
+.sec h3 { font-size:14px; margin:0 0 8px; color:#333; }
+.kv { font-size:13px; color:#444; margin:2px 0; }
+.factbox { background:#f7f9fc; border:1px solid #e8eef7; border-radius:10px; padding:12px 14px; font-size:13px; }
+.factbox .frow { display:flex; gap:8px; margin:3px 0; }
+.factbox .fk { color:#888; min-width:82px; flex-shrink:0; }
+.factbox .fv { color:#1a1a1a; }
+.card { border:1px solid #eee; border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+.card .ct { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.card .cn { font-weight:700; font-size:14px; }
+.verdict { font-weight:700; font-size:13px; padding:3px 10px; border-radius:999px; }
+.v-ok { background:#e7f5ec; color:#1a7d4b; }
+.v-no { background:#fdeaea; color:#c0392b; }
+.v-check { background:#fff3e0; color:#b35c00; }
+.incline { margin-top:8px; font-size:12.5px; padding:7px 10px; border-radius:8px; font-weight:600; }
+.inc-ok { background:#eef7f0; color:#1a7d4b; }
+.inc-no { background:#fdeaea; color:#c0392b; }
+.inc-chk { background:#fff5e8; color:#b35c00; }
+.reqbox { background:#fafbfd; border:1px dashed #dfe4ee; border-radius:9px; padding:9px 11px; margin-top:8px; }
+.reqbox .rqh { font-size:12px; font-weight:700; color:#3b4b9e; margin-bottom:4px; }
+.rqline { font-size:12.5px; color:#444; margin:3px 0; }
+.rqline b { color:#1a1a1a; font-weight:700; margin-right:4px; }
+table.inc { width:100%; margin:6px 0 2px; }
+table.inc th, table.inc td { border-bottom:1px solid #eef0f4; padding:5px 6px; font-size:12px; text-align:right; background:none; }
+table.inc th { color:#888; font-weight:600; background:#f6f8fc; }
+table.inc td:first-child, table.inc th:first-child { text-align:left; color:#555; }
+.mine-head { font-size:12px;color:#888;font-weight:700;margin:10px 0 2px; }
+table.chk { width:100%; margin-top:8px; border:none; border-radius:0; }
+table.chk td { border-bottom:1px solid #f2f2f0; padding:6px 6px; font-size:12.5px; vertical-align:top; background:none; }
+table.chk tr:last-child td { border-bottom:none; }
+.ck { width:16px; padding-right:2px !important; }
+.ck-ok:before{ content:"✓"; color:#1a7d4b; font-weight:800; }
+.ck-no:before{ content:"✕"; color:#c0392b; font-weight:800; }
+.ck-chk:before{ content:"!"; color:#b35c00; font-weight:800; }
+.ck-na:before{ content:"·"; color:#bbb; font-weight:800; }
+.cl { color:#333; font-weight:600; width:78px; white-space:nowrap; }
+.cr { color:#777; }
+.cm { color:#1a1a1a; text-align:right; white-space:nowrap; font-weight:600; }
+.reasons { margin:8px 0 0; padding-left:0; list-style:none; }
+.reasons li { font-size:12.5px; color:#555; margin:3px 0; padding-left:16px; position:relative; }
+.reasons li:before { position:absolute; left:0; top:0; }
+.reasons li.ok:before { content:"✓"; color:#1a7d4b; }
+.reasons li.no:before { content:"✕"; color:#c0392b; }
+.reasons li.info:before { content:"·"; color:#999; font-weight:700; }
+.sbar { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.sbar span { font-size:12px; background:#f2f2f0; border-radius:6px; padding:3px 8px; color:#444; }
+.disc { font-size:11.5px; color:#aaa; margin-top:14px; line-height:1.5; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:4px; }
+.legend { display:flex; gap:14px; align-items:center; font-size:12px; color:#888; margin:4px 0 10px; }
+.legend .rq { color:#c77700; font-weight:700; }
+.legend .rq:before { content:"●"; margin-right:4px; }
+.fgroup { grid-column:1/3; font-weight:700; font-size:13px; color:#1a1a1a; margin:8px 0 0; padding-top:4px; }
+.fld { display:flex; flex-direction:column; gap:3px; padding:8px 10px; border:1px solid transparent; border-radius:9px; }
+.fld.full { grid-column:1/3; }
+.fld.req { background:#fff8ee; border-color:#f4d9ac; }
+.fld.req label:before { content:"● "; color:#e08a00; font-size:11px; }
+.fld label { font-size:12px; color:#555; font-weight:600; }
+.fld input, .fld select { border:1px solid #d5d5d2; border-radius:7px; padding:7px 9px; font-size:13px; font-family:inherit; background:#fff; }
+.fld.req input, .fld.req select { border-color:#e7b877; }
+.fld .hint { font-size:11px; color:#aaa; }
+.seg { display:flex; gap:6px; flex-wrap:wrap; }
+.seg button { flex:1; min-width:56px; border:1px solid #d5d5d2; background:#fff; border-radius:7px; padding:7px; font-size:13px; cursor:pointer; }
+.seg button.on { background:#1a1a1a; color:#fff; border-color:#1a1a1a; }
+.warnmsg { color:#c0392b; font-size:12.5px; margin-top:10px; display:none; }
+.formfoot { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+@media (max-width:640px){ .hide-sm{ display:none; } .wrap{ padding:14px 10px 50px; } .form-grid{ grid-template-columns:1fr; } .fld.full{ grid-column:1; } .fgroup{ grid-column:1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>서울·수도권 청약 모니터</h1>
+      <div class="sub">출처: 청약홈 오픈API(한국부동산원) · 서울·경기·인천 · <span id="snapdate"></span></div>
+    </div>
+    <div style="text-align:right">
+      <button class="btn" id="openProfile">내 프로필 입력</button>
+      <div class="profile-status" id="pstatus"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="group"><span class="label">지역</span>
+      <span class="chip" data-region="서울">서울</span><span class="chip" data-region="경기">경기</span><span class="chip" data-region="인천">인천</span></div>
+    <div class="group"><span class="label">구분</span>
+      <span class="chip" data-gubun="민영">민영</span><span class="chip" data-gubun="국민">국민(공공)</span></div>
+    <div class="group"><span class="label">상태</span>
+      <span class="chip" data-status="open">접수중</span><span class="chip" data-status="soon">예정</span><span class="chip" data-status="done">마감</span></div>
+  </div>
+
+  <div class="stat" id="stat"></div>
+  <div id="content"></div>
+  <div class="foot">
+    행을 클릭하면 그 단지의 <b>실제 공고 정보</b>(청약홈 오픈API)와 특공·일반공급 조건, 내 자격 판정을 볼 수 있습니다. 상태는 오늘 날짜 기준으로 계산됩니다. 매주 월요일 새 수도권 공고를 알림으로 보내드립니다.
+  </div>
+</div>
+
+<div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
+<div class="overlay" id="profileOverlay"><div class="modal" id="profileModal"></div></div>
+
+<script>
+/* ===== 데이터: 청약홈 오픈API(ApplyhomeInfoDetailSvc) 실제 응답 기반 ===== */
+const SNAPSHOT_DATE = "2026-07-04";
+/*SNAPSHOT_START*/
+const LH_URL = "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1027";
+const SNAPSHOT = [
+ {region:"서울", gubun:"민영", htype:"민영", name:"동작 센트럴 동문 디 이스트", builder:"동문건설(주)", phone:"02-3280-5519",
+  notice:"2026-07-02", start:"2026-07-13", end:"2026-07-16", spStart:"2026-07-13", win:"2026-07-23", tot:72, moveIn:"2030-02",
+  regSpec:true, regAdj:true, priceCap:false, bigLand:false, publicLaw:false, area:"전용 47~63㎡", maxEok:17.1,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000153&pblancNo=2026000153",
+  docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000153&pblancNo=2026000153&atchmnflSeqNo=1884090&atchmnflSn=2",
+  spp:{nw:10, first:5, nb:7, gen:34, total:38}, units:[["46.9",10,4],["51.9",2,3],["53.9",1,5],["56.3",2,1],["56.7",3,1],["58.7",4,7],["58.5",4,3],["58.9",3,3],["59.7",3,7],["62.7",2,4]]},
+ {region:"경기", gubun:"민영", htype:"민영", name:"야목역 서희스타힐스 그랜드힐(조합원 취소분)", builder:"(주)서희건설", phone:"1551-2148",
+  notice:"2026-07-02", start:"2026-07-13", end:"2026-07-15", spStart:"2026-07-13", win:"2026-07-22", tot:83, moveIn:"2029-10",
+  regSpec:false, regAdj:false, priceCap:false, bigLand:false, publicLaw:false, area:"전용 60~85㎡", maxEok:5.8,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000290&pblancNo=2026000290",
+  docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000290&pblancNo=2026000290&atchmnflSeqNo=1871054&atchmnflSn=5",
+  spp:{nw:13, first:6, nb:9, gen:36, total:47}, units:[["59.9A",20,22],["59.9B",4,5],["84.9A",6,11],["84.9B",6,9]]},
+ {region:"경기", gubun:"국민", htype:"공공일반", name:"고양창릉 S-4블록 공공분양주택(본청약)", builder:"요진건설산업(주)", phone:"031-941-0730",
+  notice:"2026-06-30", start:"2026-07-20", end:"2026-07-29", spStart:null, win:"2026-08-19", tot:1024, moveIn:"2030-03",
+  regSpec:false, regAdj:false, priceCap:true, bigLand:true, publicLaw:true, area:"전용 59~84㎡", maxEok:8.7,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000320&pblancNo=2026000320",
+  docType:"lh", docUrl:LH_URL,
+  spp:{nw:21, first:34, nb:45, gen:55, total:190}, units:[["59A",31,103],["59B",4,14],["59C",9,29],["74A",6,19],["74B",2,4],["84A",0,12],["84B",3,9]]},
+ {region:"경기", gubun:"국민", htype:"나눔형", name:"고양창릉지구 S-3블록 이익공유형 분양주택(본청약)", builder:"에치에스화성㈜ 등", phone:"031-946-4501",
+  notice:"2026-06-30", start:"2026-07-20", end:"2026-07-29", spStart:null, win:"2026-08-18", tot:1282, moveIn:"2030-02",
+  regSpec:false, regAdj:false, priceCap:true, bigLand:true, publicLaw:true, area:"전용 46~84㎡", maxEok:7.1,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000313&pblancNo=2026000313",
+  docType:"lh", docUrl:LH_URL,
+  spp:{nw:60, first:60, nb:140, gen:82, total:320}, units:[["46",2,9],["55",14,57],["59A",30,114],["59B",12,47],["74",6,21],["84",18,72]]},
+ {region:"경기", gubun:"국민", htype:"공공임대", name:"군포대야미지구 A-1블록 6년 분양전환공공임대주택(본청약)", builder:"(주)까뮤이앤씨", phone:"031-297-5229",
+  notice:"2026-06-30", start:"2026-07-13", end:"2026-07-24", spStart:null, win:"2026-08-07", tot:377, moveIn:"2029-12",
+  regSpec:false, regAdj:false, priceCap:false, bigLand:false, publicLaw:true, area:null, maxEok:null,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000307&pblancNo=2026000307",
+  docType:"lh", docUrl:LH_URL, spp:null, units:null},
+ {region:"경기", gubun:"국민", htype:"신혼희망타운", name:"역곡지구 하우스토리(부천역곡지구 A-2BL) 신혼희망타운(공공분양)(본청약)", builder:"남광토건(주)", phone:"032-860-0976",
+  notice:"2026-06-26", start:"2026-07-13", end:"2026-07-23", spStart:null, win:"2026-08-04", tot:976, moveIn:"2029-06",
+  regSpec:false, regAdj:false, priceCap:true, bigLand:true, publicLaw:true, area:"전용 약 56㎡", maxEok:5.1,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026820005&pblancNo=2026820005",
+  docType:"lh", docUrl:LH_URL, spp:null, units:[["56A",0,159],["56B",0,31],["56C",0,122],["56D",0,12],["56E",0,35],["56F",0,13]]},
+ {region:"경기", gubun:"민영", htype:"민영", name:"양주 회천지구 A-8BL 로제비앙 엘가", builder:"로제비앙건설(주) 등", phone:"1522-3636",
+  notice:"2026-06-22", start:"2026-07-02", end:"2026-07-06", spStart:"2026-07-02", win:"2026-07-10", tot:361, moveIn:"2029-06",
+  regSpec:false, regAdj:false, priceCap:true, bigLand:true, publicLaw:false, area:"전용 85㎡", maxEok:5.3,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000278&pblancNo=2026000278",
+  docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000278&pblancNo=2026000278&atchmnflSeqNo=1858119&atchmnflSn=6",
+  spp:{nw:55, first:62, nb:37, gen:121, total:240}, units:[["84.9A",109,213],["84.9B",12,27]]},
+ {region:"경기", gubun:"민영", htype:"민영", name:"이천 서희스타힐스 SKY(조합원 취소분)", builder:"(주)서희건설", phone:"1577-6803",
+  notice:"2026-06-22", start:"2026-07-02", end:"2026-07-03", spStart:null, win:"2026-07-09", tot:8, moveIn:"2029-01",
+  regSpec:false, regAdj:false, priceCap:false, bigLand:false, publicLaw:false, area:"전용 85㎡", maxEok:6.5,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000281&pblancNo=2026000281",
+  docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000281&pblancNo=2026000281&atchmnflSeqNo=1852426&atchmnflSn=5",
+  spp:{nw:0, first:0, nb:0, gen:8, total:0}, units:null},
+ {region:"서울", gubun:"민영", htype:"민영", name:"장위 푸르지오 마크원", builder:"(주)대우건설", phone:"1551-6837",
+  notice:"2026-06-19", start:"2026-06-29", end:"2026-07-02", spStart:"2026-06-29", win:"2026-07-08", tot:1032, moveIn:"2030-09",
+  regSpec:true, regAdj:true, priceCap:false, bigLand:false, publicLaw:false, area:"전용 40~114㎡", maxEok:21.7,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000275&pblancNo=2026000275",
+  docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000275&pblancNo=2026000275&atchmnflSeqNo=1861138&atchmnflSn=4",
+  spp:{nw:148, first:63, nb:96, gen:510, total:522}, units:null},
+ {region:"서울", gubun:"민영", htype:"민영", name:"드파인 아르티아", builder:"에스케이에코플랜트(주)", phone:"1644-4041",
+  notice:"2026-06-19", start:"2026-06-29", end:"2026-07-02", spStart:"2026-06-29", win:"2026-07-08", tot:171, moveIn:"2029-11",
+  regSpec:true, regAdj:true, priceCap:false, bigLand:false, publicLaw:false, area:"전용 60~110㎡", maxEok:30.6,
+  url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000241&pblancNo=2026000241",
+  docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000241&pblancNo=2026000241&atchmnflSeqNo=1854050&atchmnflSn=5",
+  spp:{nw:23, first:11, nb:15, gen:85, total:86}, units:null}
+];
+/*SNAPSHOT_END*/
+
+/* ===== 기준 데이터 (2025년 도시근로자 월평균소득 100%) ===== */
+const BASE100 = {3:7533763, 4:8802202, 5:9326985};
+function incThr(size, pct){ const b = BASE100[Math.min(Math.max(size||3,1),5) <=3 ? 3 : Math.min(size,5)]; return b ? Math.round(b*pct/100) : null; }
+function manwon(n){ return (n/10000).toLocaleString('ko-KR'); }
+
+/* ===== 프로필 ===== */
+const PKEY = "cheongyak_profile_v1";
+function loadProfile(){ try{ return JSON.parse(localStorage.getItem(PKEY)); }catch(e){ return null; } }
+function saveProfile(p){ localStorage.setItem(PKEY, JSON.stringify(p)); }
+const REQUIRED = ["noHome","marital","hasAccount","householdSize","monthlyIncome","dualIncome"];
+function profileComplete(p){ return p && REQUIRED.every(k=> p[k]!==undefined && p[k]!=='' ); }
+
+/* ===== 가점 (84점) ===== */
+function scoreNoHome(y){ if(y==null||y==="") return 0; y=+y; if(y<1) return 2; return Math.min(32, 4+(Math.floor(y)-1)*2); }
+function scoreDep(n){ if(n==null||n==="") return 0; n=+n; return Math.min(35, 5+n*5); }
+function scoreAcct(m){ if(m==null||m==="") return 0; m=+m; if(m<6) return 1; if(m<12) return 2; return Math.min(17, 3+(Math.floor(m/12)-1)); }
+function gapScore(p){ const a=scoreNoHome(p.noHomeYears), b=scoreDep(p.dependents), c=scoreAcct(p.acctMonths); return {a,b,c,total:a+b+c}; }
+
+/* ===== 판정 ===== */
+function V(status,label,reasons,extra){ return {status,label,reasons:reasons||[],extra:extra||null}; }
+function R(t,txt){ return {t,txt}; }
+function isPublic(L){ return L.gubun === "국민"; }
+function isRegulated(L){ return !!(L.regSpec || L.regAdj); }
+function regLabel(L){ const a=[]; if(L.regSpec)a.push("투기과열지구"); if(L.regAdj)a.push("조정대상지역"); return a.length? a.join("·") : "비규제지역"; }
+
+function pushPastSpecial(p, rs){
+  if(p.pastSpecial===true){
+    const marriedish = (p.marital==='기혼'||p.marital==='예비');
+    if(marriedish) rs.push(R('info','세대 특별공급 당첨 이력 있음 — 특공은 1세대 1회 제한이나, 배우자가 혼인 전 당첨한 경우 신혼·생애최초·신생아 특공은 신청 가능(2024.3.25 개정). 공고 확인.'));
+    else rs.push(R('no','세대에 특별공급 당첨 이력이 있어 특별공급 재신청 불가(1세대 평생 1회).'));
+  }
+}
+// 특공 물량 게이트: 이 단지에 해당 특공 배정이 있는지 (API 주택형별 실제 세대수)
+function spGate(L, key, rs, labelKo){
+  if(!L.spp) { rs.push(R('info', labelKo+' 배정 세대수는 공고문에서 확인하세요(주택형별 데이터 미수집).')); return true; }
+  const n = L.spp[key];
+  if(n===0){ rs.push(R('no','이 공고에는 '+labelKo+' 배정 물량이 없습니다(0세대).')); return false; }
+  rs.push(R('ok','이 단지 '+labelKo+' 실제 배정 '+n+'세대(청약홈 API).')); return true;
+}
+
+function incomeCheck(p, L, type){
+  const size = +p.householdSize;
+  if(!size || p.monthlyIncome==null || p.monthlyIncome===''){
+    return {ok:false, tier:'입력필요', line:{cls:'inc-chk', txt:'소득 판정 불가 — 가구원 수·월평균소득을 입력하세요.'}};
+  }
+  if(size>=6) return {ok:true, tier:'확인', line:{cls:'inc-chk', txt:'가구원 6인 이상 — 소득기준은 공고문에서 확인하세요.'}};
+  const pub = isPublic(L);
+  const income = (+p.monthlyIncome)*10000; const dual = !!p.dualIncome;
+  let pri, gen;
+  if(type==='newlywed'){ pri = dual?120:100; gen = pub ? (dual?140:130) : (dual?160:140); }
+  else if(type==='first'){ pri = dual?120:100; if(!pub){ pri=100; } gen = pub ? (dual?140:130) : 130; }
+  else { pri = dual?120:100; gen = dual?150:140; }
+  const tPri = incThr(size, pri), tGen = incThr(size, gen);
+  const asset = (p.realEstate!=null && p.realEstate!=='') ? (+p.realEstate)*10000 : null;
+  const AL = 331000000;
+  const ctx = '(가구 '+size+'인·'+(dual?'맞벌이':'외벌이')+', 내 월소득 '+manwon(income)+'만원)';
+  const extra = (L.htype==='나눔형') ? ' ※나눔형은 소득 130%(맞벌이 200%)·순자산 기준 별도 — 공고 확인.' : '';
+  if(income <= tPri) return {ok:true, tier:'우선공급', line:{cls:'inc-ok', txt:'소득 요건 충족 — 우선공급 구간(기준 '+pri+'%, '+manwon(tPri)+'만원 이하) '+ctx+extra}};
+  if(income <= tGen) return {ok:true, tier:'일반공급', line:{cls:'inc-ok', txt:'소득 요건 충족 — 일반공급 구간(기준 '+gen+'%, '+manwon(tGen)+'만원 이하) '+ctx+extra}};
+  if(asset!=null){
+    if(asset<=AL) return {ok:true, tier:'추첨', line:{cls:'inc-ok', txt:'소득 초과이나 부동산가액 '+manwon(asset)+'만원 ≤ 3억3,100만원 → 추첨공급 대상 '+ctx}};
+    return {ok:false, tier:'초과', line:{cls:'inc-no', txt:'소득 미충족 — 일반공급 기준('+gen+'%, '+manwon(tGen)+'만원) 초과 & 부동산가액 3억3,100만원 초과 '+ctx}};
+  }
+  return {ok:false, tier:'추첨확인', line:{cls:'inc-chk', txt:'소득이 일반공급 기준('+gen+'%, '+manwon(tGen)+'만원) 초과 — 부동산가액 3억3,100만원 이하면 추첨 가능. 부동산가액을 입력하세요 '+ctx}};
+}
+
+function judgeGeneral(p, L){
+  const rs = []; const pub = isPublic(L); const reg = isRegulated(L);
+  if(!p.hasAccount){ rs.push(R('no','청약통장이 없어 청약 불가.')); return V('no','청약 불가', rs); }
+  let rank2 = false;
+  if(pub){
+    if(p.noHome===false){ return V('no','청약 불가', [R('no','공공(국민)주택 일반공급은 무주택세대구성원만 신청 가능 → 유주택 불가.')]); }
+    rs.push(R('ok','무주택세대구성원 요건 충족.'));
+    if((+p.acctMonths>=24)&&(+p.acctCount>=24)) rs.push(R('ok','통장 24개월·24회 이상 → 1순위(수도권 공공 기준).'));
+    else if((+p.acctMonths>=12)&&(+p.acctCount>=12)){ rs.push(R('info','통장 12개월·12회 이상 → 1순위(수도권 공공 일반 기준). 대규모택지/투기과열은 가입 24개월·24회가 필요할 수 있어 공고 확인.')); }
+    else { rank2=true; rs.push(R('info','통장 12개월/12회 미만 → 2순위(수도권 기준).')); }
+    rs.push(R('info','1순위 경쟁 시 순차제(무주택 3년 이상·저축총액/납입횟수)로 선정.'));
+    return V(rank2?'check':'ok', rank2?'2순위 청약 가능':'1순위 청약 가능', rs);
+  } else {
+    if(reg){
+      rs.push(R('info','규제지역('+regLabel(L)+') — 1순위 요건: 무주택 세대주 + 통장 가입 24개월·예치금 충족 + 과거 5년 내 세대 당첨 이력 없음.'));
+      const okHome = p.noHome!==false, okHead = p.householder===true, okAcct = (+p.acctMonths>=24);
+      rs.push(okHome? R('ok','무주택 요건 충족.') : R('no','규제지역 1순위는 무주택 세대여야 합니다.'));
+      rs.push(okHead? R('ok','세대주 요건 충족.') : R('no','규제지역 1순위는 세대주만 신청 가능(세대원 불가).'));
+      rs.push(okAcct? R('ok','통장 24개월 이상 요건 충족(예치금은 공고 확인).') : R('no','규제지역 1순위는 통장 가입 24개월 이상 필요.'));
+      const anyNo = rs.some(r=>r.t==='no');
+      const g = gapScore(p);
+      rs.push(R('info','규제지역은 가점제 비중이 큽니다(전용 85㎡ 이하 가점 40%+추첨, 85㎡ 초과 추첨). 아래 가점 참고.'));
+      return V(anyNo?'no':'ok', anyNo?'1순위 요건 미충족':'1순위 청약 가능', rs, {gap:g});
+    } else {
+      if(+p.acctMonths>=12) rs.push(R('ok','통장 12개월 이상 → 1순위(수도권 비규제 기준). 면적별 예치금 충족은 공고 확인.'));
+      else { rank2=true; rs.push(R('info','통장 12개월 미만 → 2순위.')); }
+      rs.push(R('info','비규제 지역은 유주택자도 청약 가능(추첨). 1순위 경쟁 시 가점제+추첨.'));
+      const g = gapScore(p);
+      return V(rank2?'check':'ok', rank2?'2순위 청약 가능':'1순위 청약 가능', rs, {gap:g});
+    }
+  }
+}
+
+/* ===== 특공 조건 체크리스트 판정 ===== */
+function mrow(k,req,mine,st){ return {k,req,mine,st}; }
+function thrPair(L,type,p){
+  const size=+p.householdSize||3, dual=!!p.dualIncome, pub=isPublic(L);
+  let pri,gen;
+  if(type==='newlywed'){ pri=dual?120:100; gen=pub?(dual?140:130):(dual?160:140); }
+  else if(type==='first'){ pri=pub?(dual?120:100):100; gen=pub?(dual?140:130):130; }
+  else { pri=dual?120:100; gen=dual?150:140; }
+  return {size,dual,pri,gen,tPri:incThr(size,pri),tGen:incThr(size,gen)};
+}
+function incomeRow(p,L,type){
+  const size=+p.householdSize;
+  if(!size||p.monthlyIncome==null||p.monthlyIncome===''){ return {row:mrow('소득(월)','가구원수·월소득 입력 필요','미입력','chk'), tier:null}; }
+  if(size>=6){ return {row:mrow('소득(월)','6인 이상 공고 확인','-','chk'), tier:null}; }
+  const t=thrPair(L,type,p); const income=(+p.monthlyIncome)*10000; const mine=manwon(income)+'만원';
+  const req='우선 '+manwon(t.tPri)+'만↓ / 일반 '+manwon(t.tGen)+'만↓';
+  if(income<=t.tGen) return {row:mrow('소득(월)',req,mine,'ok'), tier: income<=t.tPri?'우선공급':'일반공급'};
+  const asset=(p.realEstate!=null&&p.realEstate!=='')?(+p.realEstate)*10000:null;
+  if(asset==null) return {row:mrow('소득(월)',req+' · 초과 시 부동산 3.31억↓ 추첨',mine+'(초과)','chk'), tier:'추첨확인'};
+  if(asset<=331000000) return {row:mrow('소득(월)','기준 초과·부동산 3.31억↓ 추첨',mine+' / 자산 '+manwon(asset)+'만','chk'), tier:'추첨'};
+  return {row:mrow('소득(월)',req,mine+' / 자산 '+manwon(asset)+'만(초과)','no'), tier:'초과'};
+}
+function marryMine(p){ return p.marital==='기혼'?('혼인 '+Math.floor((+p.marriageMonths||0)/12)+'년'):(p.marital||'-'); }
+function pastRow(p){ if(p.pastSpecial!==true) return null; const ex=(p.marital==='기혼'||p.marital==='예비'); return mrow('특공 당첨이력', ex?'배우자 혼인 전 당첨은 예외':'세대 당첨 이력 없어야', '있음', ex?'chk':'no'); }
+function finalizeChecks(c, inc, extra){
+  const fail=c.some(x=>x.st==='no'), chk=c.some(x=>x.st==='chk');
+  let status,label;
+  if(fail){ status='no'; label='자격 미충족'; }
+  else if(extra && extra.onlyLottery){ status='check'; label='추첨공급만 가능(1인가구)'; }
+  else if(chk){ status='check'; label=(inc&&(inc.tier==='추첨'||inc.tier==='추첨확인'))?'추첨 대상 가능(자산 확인)':'추가 확인 필요'; }
+  else { status='ok'; label=(inc&&inc.tier?inc.tier:'')+' 대상 가능'; }
+  return {status,label,checks:c, note:(extra&&extra.note)||''};
+}
+
+function judgeNewlywed(p, L){
+  const c=[];
+  if(L.spp){ if(L.spp.nw===0){ c.push(mrow('배정 물량','신혼 특공','0세대(없음)','no')); return {status:'no',label:'이 단지 물량 없음',checks:c}; } c.push(mrow('배정 물량','신혼 특공','실제 '+L.spp.nw+'세대','ok')); }
+  else c.push(mrow('배정 물량','신혼 특공','공고 확인','chk'));
+  const married7=(p.marital==='기혼'&&+p.marriageMonths<=84), pre=(p.marital==='예비'), yc=+p.minorChildren>0;
+  const target=married7||pre||(isPublic(L)&&yc);
+  c.push(mrow('대상','혼인 7년내·예비신혼'+(isPublic(L)?'·6세이하 자녀':''), marryMine(p), target?'ok':'no'));
+  c.push(mrow('무주택','세대 전원 무주택', p.noHome===false?'유주택':(p.noHome===true?'무주택':'-'), p.noHome===false?'no':'ok'));
+  c.push(mrow('청약통장','가입 6개월 이상', p.hasAccount?((+p.acctMonths||0)+'개월'):'없음', (!p.hasAccount||+p.acctMonths<6)?'no':'ok'));
+  const inc=incomeRow(p,L,'newlywed'); c.push(inc.row);
+  c.push(mrow('전용면적','85㎡ 이하 특공', L.area||'-','na'));
+  const pr=pastRow(p); if(pr) c.push(pr);
+  const note = pre?'예비신혼: 입주 전(공공 나눔형은 공고일+1년 내) 혼인 증빙 필요.':((married7&&+p.marriageMonths<=24)?'혼인 2년 이내 → 공공 나눔형 우선공급(1단계) 대상 가능.':'');
+  return finalizeChecks(c, inc, {note});
+}
+
+function judgeFirst(p, L){
+  const c=[];
+  if(L.spp){ if(L.spp.first===0){ c.push(mrow('배정 물량','생애최초 특공','0세대(없음)','no')); return {status:'no',label:'이 단지 물량 없음',checks:c}; } c.push(mrow('배정 물량','생애최초 특공','실제 '+L.spp.first+'세대','ok')); }
+  else c.push(mrow('배정 물량','생애최초 특공','공고 확인','chk'));
+  c.push(mrow('주택소유이력','세대 전원 소유이력 없음', p.everOwned===true?'있음':(p.everOwned===false?'없음':'-'), p.everOwned===true?'no':'ok'));
+  const eh=(p.marital==='기혼')||(+p.minorChildren>0);
+  c.push(mrow('혼인/자녀','혼인 중 또는 미혼자녀', p.marital==='기혼'?'기혼':((+p.minorChildren>0)?('자녀 '+p.minorChildren+'명'):(p.marital||'-')), eh?'ok':'chk'));
+  c.push(mrow('무주택','세대 전원 무주택', p.noHome===false?'유주택':(p.noHome===true?'무주택':'-'), p.noHome===false?'no':'ok'));
+  c.push(mrow('소득세','5년 이상 납부', p.taxYears5===true?'예':(p.taxYears5===false?'아니오':'-'), p.taxYears5===true?'ok':'no'));
+  c.push(mrow('청약통장','가입+예치금(공고)', p.hasAccount?((+p.acctMonths||0)+'개월'):'없음', !p.hasAccount?'no':'ok'));
+  const inc=incomeRow(p,L,'first'); c.push(inc.row);
+  c.push(mrow('전용면적','85㎡ 이하 특공', L.area||'-','na'));
+  const pr=pastRow(p); if(pr) c.push(pr);
+  return finalizeChecks(c, inc, {onlyLottery: !eh && !c.some(x=>x.st==='no')});
+}
+
+function judgeNewborn(p, L){
+  const c=[];
+  if(L.spp){ if(L.spp.nb===0){ c.push(mrow('배정 물량','신생아 특공','0세대(없음)','no')); return {status:'no',label:'이 단지 물량 없음',checks:c}; } c.push(mrow('배정 물량','신생아 특공','실제 '+L.spp.nb+'세대','ok')); }
+  else c.push(mrow('배정 물량','신생아 특공','공고 확인','chk'));
+  c.push(mrow('대상','2년내 출생·임신 자녀', p.newborn===true?'있음':(p.newborn===false?'없음':'-'), p.newborn===true?'ok':'no'));
+  c.push(mrow('무주택','세대 전원 무주택', p.noHome===false?'유주택':(p.noHome===true?'무주택':'-'), p.noHome===false?'no':'ok'));
+  c.push(mrow('청약통장','가입 6개월 이상', p.hasAccount?((+p.acctMonths||0)+'개월'):'없음', (!p.hasAccount||+p.acctMonths<6)?'no':'ok'));
+  const inc=incomeRow(p,L,'newborn'); c.push(inc.row);
+  c.push(mrow('전용면적','85㎡ 이하 특공', L.area||'-','na'));
+  const pr=pastRow(p); if(pr) c.push(pr);
+  return finalizeChecks(c, inc, {});
+}
+
+/* 신혼희망타운 */
+function judgeHopeTown(p, L){
+  const rs=[];
+  const ok = (p.marital==='기혼'&&+p.marriageMonths<=84)||(p.marital==='예비')||(+p.minorChildren>0);
+  if(!ok){ rs.push(R('no','신혼희망타운 대상 아님(혼인 7년 이내·예비신혼·6세 이하 자녀).')); return V('no','대상 아님', rs); }
+  rs.push(R('ok','혼인 7년 이내/예비신혼/자녀 요건 대상.'));
+  rs.push(p.noHome===false? R('no','무주택세대구성원이 아니면 불가.') : R('ok','무주택세대구성원 요건 충족.'));
+  if(p.hasAccount) rs.push(+p.acctMonths>=6? R('ok','청약통장(주택청약종합저축) 6개월 이상.'):R('no','통장 6개월 미만 → 신청 불가.')); else rs.push(R('no','청약통장이 없어 신청 불가.'));
+  rs.push(R('info','신혼희망타운은 전용 소득·자산(총자산 약 3.79억 이하 등) 기준과 별도 가점제로 선정됩니다 — 세부 기준은 공고 확인.'));
+  const inc = incomeCheck(p, L, 'newlywed');
+  let status,label;
+  if(rs.some(r=>r.t==='no')){ status='no'; label='자격 미충족'; }
+  else { status='check'; label='대상 가능(자산·가점 확인)'; }
+  return V(status,label,rs,{inc});
+}
+
+/* ===== 조건 요약(실제 API 값) ===== */
+function condSummary(L){
+  const out=[];
+  const htNm = {"민영":"민영 분양주택","공공일반":"공공분양(일반형)","나눔형":"나눔형(이익공유형) 공공분양","신혼희망타운":"신혼희망타운(공공분양)","공공임대":"6년 분양전환 공공임대"}[L.htype]||L.htype;
+  out.push('<div class="factbox">');
+  out.push('<div class="frow"><span class="fk">유형</span><span class="fv">'+htNm+' · '+(isPublic(L)?'국민(공공)':'민영')+'</span></div>');
+  out.push('<div class="frow"><span class="fk">규제</span><span class="fv">'+regLabel(L)+(L.priceCap?' · 분양가상한제 적용':'')+(L.bigLand?' · 대규모택지(지역우선)':'')+'</span></div>');
+  out.push('<div class="frow"><span class="fk">공급규모</span><span class="fv">총 '+L.tot+'세대'+(L.area?' · '+L.area:'')+(L.maxEok?' · 최고 분양가 약 '+L.maxEok+'억':'')+'</span></div>');
+  if(L.spp) out.push('<div class="frow"><span class="fk">특공 배정</span><span class="fv">신혼 '+L.spp.nw+' · 생애최초 '+L.spp.first+' · 신생아 '+L.spp.nb+'세대 (일반공급 '+L.spp.gen+'세대)</span></div>');
+  else out.push('<div class="frow"><span class="fk">특공 배정</span><span class="fv">주택형별 세부 물량은 공고문 확인</span></div>');
+  out.push('<div class="frow"><span class="fk">일정</span><span class="fv">청약 '+L.start+'~'+L.end+(L.spStart?' · 특공 '+L.spStart:'')+' · 당첨발표 '+L.win+' · 입주예정 '+L.moveIn+'</span></div>');
+  out.push('</div>');
+  if(L.units && L.units.length){
+    out.push('<div style="margin-top:10px;font-size:12px;color:#888;font-weight:600">주택형별 공급 (공고 원문)</div>');
+    out.push('<table style="margin-top:4px"><thead><tr><th>전용㎡</th><th>일반</th><th>특별</th><th>계</th></tr></thead><tbody>');
+    for(const u of L.units) out.push('<tr><td>'+esc(u[0])+'</td><td>'+u[1]+'</td><td>'+u[2]+'</td><td>'+(u[1]+u[2])+'</td></tr>');
+    out.push('</tbody></table>');
+  }
+  return out.join('');
+}
+
+/* ===== 렌더 ===== */
+const TARGET = ["서울","경기","인천"];
+const dft = { region:[...TARGET], gubun:["민영","국민"], status:["open","soon"] };
+let filters; try{ filters=JSON.parse(localStorage.getItem("cheongyak_filters"))||dft; }catch(e){ filters=dft; }
+if(!filters.region||!filters.gubun||!filters.status) filters=dft;
+function saveFilters(){ try{ localStorage.setItem("cheongyak_filters", JSON.stringify(filters)); }catch(e){} }
+function today0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function pd(s){ const m=(s||"").match(/(\d{4})-(\d{2})-(\d{2})/); return m? new Date(+m[1],+m[2]-1,+m[3]) : null; }
+function statusOf(r){ const t=today0(),s=pd(r.start),e=pd(r.end);
+  if(s&&t<s){ const d=Math.ceil((s-t)/864e5); return {key:"soon",label:"D-"+d,cls:"b-soon"}; }
+  if(s&&e&&t>=s&&t<=e) return {key:"open",label:"접수중",cls:"b-open"};
+  if(e&&t>e) return {key:"done",label:"마감",cls:"b-done"};
+  return {key:"soon",label:"예정",cls:"b-soon"}; }
+function esc(s){ return (s||"").replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+function render(){
+  syncChips();
+  const rows = SNAPSHOT.map((r,i)=>({...r,_i:i,_s:statusOf(r)}))
+    .filter(r=>TARGET.includes(r.region)).filter(r=>filters.region.includes(r.region)).filter(r=>filters.gubun.includes(r.gubun)).filter(r=>filters.status.includes(r._s.key));
+  const order={open:0,soon:1,done:2};
+  rows.sort((a,b)=>{ if(order[a._s.key]!==order[b._s.key]) return order[a._s.key]-order[b._s.key];
+    const ad=pd(a.start)?pd(a.start).getTime():0, bd=pd(b.start)?pd(b.start).getTime():0; return a._s.key==="done"?bd-ad:ad-bd; });
+  const base=SNAPSHOT.filter(r=>TARGET.includes(r.region));
+  const nOpen=base.filter(r=>statusOf(r).key==="open").length, nSoon=base.filter(r=>statusOf(r).key==="soon").length;
+  document.getElementById("stat").innerHTML='<div><b>'+base.length+'</b> 건 (수도권)</div><div>접수중 <b>'+nOpen+'</b></div><div>예정 <b>'+nSoon+'</b></div><div style="color:#aaa">표시 '+rows.length+'건</div>';
+  const c=document.getElementById("content");
+  if(rows.length===0){ c.innerHTML='<div class="empty">조건에 맞는 청약이 없습니다. 필터를 조정해 보세요.</div>'; return; }
+  let h='<table><thead><tr><th>상태</th><th>지역</th><th>주택명</th><th class="hide-sm">청약기간</th><th class="hide-sm">당첨발표</th></tr></thead><tbody>';
+  for(const r of rows){
+    h+='<tr data-i="'+r._i+'"><td><span class="badge '+r._s.cls+'">'+r._s.label+'</span></td>'+
+      '<td><span class="rtag">'+r.region+'</span>'+(isRegulated(r)?'<span class="reg">규제</span>':'')+'</td>'+
+      '<td><div class="name">'+esc(r.name)+'<span class="arr">자격보기 ›</span></div>'+
+        '<div class="meta"><span class="gubun">'+esc(r.gubun)+' · '+esc(r.htype)+'</span> · '+esc(r.builder)+'</div></td>'+
+      '<td class="hide-sm">'+esc(r.start)+' ~ '+esc(r.end)+'<div class="meta">공고 '+esc(r.notice)+'</div></td>'+
+      '<td class="hide-sm">'+esc(r.win)+'</td></tr>';
+  }
+  h+='</tbody></table>';
+  c.innerHTML=h;
+  c.querySelectorAll('tbody tr').forEach(tr=>tr.addEventListener('click',()=>openDetail(+tr.dataset.i)));
+}
+function syncChips(){ document.querySelectorAll(".chip").forEach(ch=>{ let on=false;
+  if(ch.dataset.region) on=filters.region.includes(ch.dataset.region);
+  if(ch.dataset.gubun) on=filters.gubun.includes(ch.dataset.gubun);
+  if(ch.dataset.status) on=filters.status.includes(ch.dataset.status);
+  ch.classList.toggle("on",on); }); }
+function toggle(a,v){ const i=a.indexOf(v); if(i>=0)a.splice(i,1); else a.push(v); }
+document.querySelectorAll(".chip").forEach(ch=>ch.addEventListener("click",()=>{
+  if(ch.dataset.region) toggle(filters.region,ch.dataset.region);
+  if(ch.dataset.gubun) toggle(filters.gubun,ch.dataset.gubun);
+  if(ch.dataset.status) toggle(filters.status,ch.dataset.status);
+  saveFilters(); render(); }));
+
+function verdictHtml(title, v){
+  const cls = v.status==='ok'?'v-ok':(v.status==='no'?'v-no':'v-check');
+  let h='<div class="card"><div class="ct"><span class="cn">'+title+'</span><span class="verdict '+cls+'">'+esc(v.label)+'</span></div>';
+  if(v.checks && v.checks.length){ h+='<table class="chk"><tbody>'; for(const r of v.checks){ h+='<tr><td class="ck ck-'+r.st+'"></td><td class="cl">'+esc(r.k)+'</td><td class="cr">'+esc(r.req)+'</td><td class="cm">'+esc(r.mine)+'</td></tr>'; } h+='</tbody></table>'; }
+  if(v.note) h+='<div class="meta" style="margin-top:6px">'+esc(v.note)+'</div>';
+  if(v.extra&&v.extra.inc&&v.extra.inc.line) h+='<div class="incline '+v.extra.inc.line.cls+'">'+esc(v.extra.inc.line.txt)+'</div>';
+  if(v.reasons&&v.reasons.length){ h+='<ul class="reasons">'; for(const r of v.reasons) h+='<li class="'+r.t+'">'+esc(r.txt)+'</li>'; h+='</ul>'; }
+  if(v.extra&&v.extra.gap){ const g=v.extra.gap; h+='<div class="sbar"><span>청약가점 <b>'+g.total+'</b>/84</span><span>무주택 '+g.a+'</span><span>부양가족 '+g.b+'</span><span>통장 '+g.c+'</span></div>'; }
+  h+='</div>'; return h;
+}
+/* 특공별 가능 조건(제도·API 기준) — 프로필 없이도 표시 */
+function spPct(L, type){
+  const pub = isPublic(L);
+  if(type==='newlywed') return { pri:100, priD:120, gen: pub?130:140, genD: pub?140:160,
+     target:'혼인 7년 이내 또는 예비신혼'+(pub?' (공공은 6세 이하 자녀 포함)':''), key:'nw' };
+  if(type==='first') return { pri:100, priD: pub?120:100, gen:130, genD: pub?140:130,
+     target:'생애 최초 주택구입(본인·세대 전원 과거 소유이력 없음) · 혼인 중이거나 미혼자녀(미혼 1인가구는 추첨공급만)', key:'first', extra:['소득세 5년 이상 납부'] };
+  return { pri:100, priD:120, gen:140, genD:150, target:'입주자모집공고일 기준 2년 이내 출생(임신 포함) 자녀', key:'nb' };
+}
+function m만(n){ return Math.round(n/10000).toLocaleString('ko-KR'); }
+function moneyCell(size, pct, pctD){
+  const a=m만(incThr(size,pct));
+  if(pctD===pct) return a+'만';
+  return '외 '+a+' / 맞 '+m만(incThr(size,pctD))+'만';
+}
+function spConditions(L, type){
+  const cfg = spPct(L, type);
+  const nSel = L.spp ? L.spp[cfg.key] : null;
+  let h='<div class="reqbox"><div class="rqh">가능 조건 (청약홈 API·주택공급규칙 기준)</div>';
+  h+='<div class="rqline"><b>대상</b>'+cfg.target+'</div>';
+  h+='<div class="rqline"><b>공통</b>무주택세대구성원 · 청약통장 가입 6개월 이상'+(cfg.extra?(' · '+cfg.extra.join(' · ')):'')+' · 전용 85㎡ 이하 (이 단지 '+(L.area||'-')+')</div>';
+  if(nSel!=null) h+='<div class="rqline"><b>이 단지 배정</b>'+(nSel>0? nSel+'세대':'0세대 (이 단지는 해당 특공 없음)')+'</div>';
+  else h+='<div class="rqline"><b>이 단지 배정</b>공고문에서 확인</div>';
+  h+='<div class="rqline"><b>소득기준</b>세대 월평균소득(2025 도시근로자) 기준, 아래 이하:</div>';
+  h+='<table class="inc"><thead><tr><th>가구원</th><th>우선공급('+cfg.pri+(cfg.priD!==cfg.pri?'/'+cfg.priD:'')+'%)</th><th>일반공급('+cfg.gen+(cfg.genD!==cfg.gen?'/'+cfg.genD:'')+'%)</th></tr></thead><tbody>';
+  for(const s of [[3,'3인 이하'],[4,'4인'],[5,'5인']]) h+='<tr><td>'+s[1]+'</td><td>'+moneyCell(s[0],cfg.pri,cfg.priD)+'</td><td>'+moneyCell(s[0],cfg.gen,cfg.genD)+'</td></tr>';
+  h+='</tbody></table>';
+  h+='<div class="rqline" style="color:#888">· 소득이 일반공급 기준 초과라도 부동산가액 3억3,100만원 이하면 추첨공급 신청 가능'+(L.htype==='나눔형'?' · (나눔형은 소득 130%/맞벌이 200%·순자산 기준 별도 — 공고 확인)':'')+'</div>';
+  h+='</div>';
+  return h;
+}
+function spCard(title, type, L, p){
+  const v = p ? (type==='newlywed'?judgeNewlywed(p,L):type==='first'?judgeFirst(p,L):judgeNewborn(p,L)) : null;
+  const cls = v? (v.status==='ok'?'v-ok':(v.status==='no'?'v-no':'v-check')) : '';
+  let h='<div class="card"><div class="ct"><span class="cn">'+title+'</span>'+(v?'<span class="verdict '+cls+'">'+esc(v.label)+'</span>':'')+'</div>';
+  h+= spConditions(L, type);
+  if(v){
+    h+='<div class="mine-head">내 정보로 본 충족 여부</div><table class="chk"><tbody>';
+    for(const r of v.checks) h+='<tr><td class="ck ck-'+r.st+'"></td><td class="cl">'+esc(r.k)+'</td><td class="cr">'+esc(r.req)+'</td><td class="cm">'+esc(r.mine)+'</td></tr>';
+    h+='</tbody></table>';
+    if(v.note) h+='<div class="meta" style="margin-top:6px">'+esc(v.note)+'</div>';
+  }
+  h+='</div>'; return h;
+}
+function judgmentCards(p, L){
+  if(L.htype==='신혼희망타운') return (p?verdictHtml('신혼희망타운 자격', judgeHopeTown(p,L)):'<div class="card"><div class="cn">신혼희망타운</div><div class="rqline" style="margin-top:6px">전 세대가 신혼희망타운으로 공급. 혼인 7년 이내·예비신혼·6세 이하 자녀, 무주택세대구성원, 통장 6개월↑, 소득·자산(총자산 약 3.79억↓) 기준·별도 가점제로 선정. 프로필 입력 시 충족 여부 판정.</div></div>');
+  if(L.htype==='공공임대') return '<div class="card"><div class="cn">6년 분양전환 공공임대</div><div class="rqline" style="margin-top:6px">분양이 아닌 임대(6년 후 분양전환). 무주택세대구성원·소득·자산 요건과 우선공급 대상이 일반 분양과 다릅니다. 세부 조건은 공고문 확인.</div>'+(p?(p.noHome===false?'<div class="incline inc-no">무주택세대구성원이 아니면 신청 불가.</div>':'<div class="incline inc-ok">무주택세대구성원 요건 충족.</div>'):'')+'</div>';
+  let h='';
+  if(p) h+= verdictHtml('일반공급 (순위·가점)', judgeGeneral(p,L));
+  else h+= '<div class="card"><div class="cn">일반공급 (순위·가점)</div><div class="rqline" style="margin-top:6px">청약통장 필수. '+(isPublic(L)?'무주택세대구성원, 1순위 경쟁 시 순차제(무주택3년↑·저축총액/납입횟수).':(isRegulated(L)?'규제지역: 무주택·세대주·통장 24개월↑ 1순위, 가점제 비중 큼.':'통장 12개월↑ 1순위(비규제), 가점제+추첨.'))+' 프로필 입력 시 순위·가점 판정.</div></div>';
+  h+= spCard('신혼부부 특별공급','newlywed',L,p);
+  h+= spCard('생애최초 특별공급','first',L,p);
+  h+= spCard('신생아 특별공급','newborn',L,p);
+  return h;
+}
+
+function openDetail(i){
+  const L = SNAPSHOT[i]; const p = loadProfile(); const s = statusOf(L);
+  let h='<button class="mclose" onclick="closeOverlay()">×</button>';
+  h+='<h2>'+esc(L.name)+'</h2>';
+  h+='<div class="kv"><span class="rtag">'+L.region+'</span>'+(isRegulated(L)?'<span class="reg">규제지역</span>':'')+' &nbsp;'+esc(L.builder)+' · 문의 '+esc(L.phone||'-')+'</div>';
+  const docBtn = '<a class="btn" style="text-decoration:none" href="'+L.docUrl+'" target="_blank">'+(L.docType==='pdf'?'📄 모집공고문 PDF 원문':'LH청약플러스 공고문')+'</a>';
+  h+='<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'+ docBtn +
+     '<a class="btn ghost" style="text-decoration:none" href="'+L.url+'" target="_blank">청약홈 상세페이지</a>'+
+     (L.phone?'<a class="btn ghost" style="text-decoration:none" href="tel:'+esc(L.phone.replace(/-/g,''))+'">☎ 문의</a>':'')+
+     '</div>'+
+     '<div class="meta" style="margin-top:6px">※ 「모집공고문 PDF 원문」은 청약홈 공식 PDF를 새 창으로 엽니다(보안상 이 페이지 안에 직접 삽입은 불가). 공공(LH) 단지는 LH청약플러스에서 공고문을 제공합니다.</div>';
+  h+='<div class="sec"><h3>공고 정보 (청약홈 API 실제값)</h3>'+condSummary(L)+'</div>';
+  h+='<div class="sec"><h3>특별공급·일반공급 가능 조건 &amp; 내 자격</h3>';
+  h+='<div class="incline inc-chk" style="margin-bottom:10px">규제여부·배정 세대수·면적·소득 상한 금액은 <b>청약홈 API·주택공급규칙 실제값</b>입니다. 각 특공의 <b>가능 조건</b>을 먼저 보여주고, 프로필을 입력하면 조건별 <b>내 충족 여부(O/X)</b>가 함께 표시됩니다.</div>';
+  if(!p){ h+='<div style="margin:0 0 10px"><button class="btn" onclick="closeOverlay();openProfileForm()">내 프로필 입력하고 충족 여부 보기</button></div>'; }
+  else if(!profileComplete(p)){ h+='<div class="incline inc-chk">필수 항목이 비어 있어 일부 판정이 제한됩니다.</div>'; }
+  h+= judgmentCards(p,L);
+  if(p) h+='<div style="margin-top:6px"><button class="btn ghost" onclick="openProfileForm()">프로필 수정</button></div>';
+  h+='</div>';
+  h+='<div class="disc">※ 규제/물량/면적/일정은 청약홈 API 기준(갱신 시점). 소득 구간은 2025년 도시근로자 기준의 참고 계산이며, 나눔형·신혼희망타운의 자산기준, 지역우선 거주요건, 재당첨 제한, 부적격 사유 등은 공고문에 따라 달라집니다. 실제 청약 전 입주자모집공고 원문과 청약홈 「청약자격 진단」으로 확인하세요.</div>';
+  document.getElementById('detailModal').innerHTML=h;
+  document.getElementById('detailOverlay').classList.add('show');
+}
+
+/* ===== 프로필 폼 ===== */
+function seg(name, val, opts){ return '<div class="seg" data-seg="'+name+'">'+opts.map(o=>'<button type="button" data-v="'+o[0]+'" class="'+(String(val)===String(o[0])?'on':'')+'">'+o[1]+'</button>').join('')+'</div>'; }
+function openProfileForm(){
+  const p = loadProfile()||{};
+  const num=(k,ph)=>'<input type="number" min="0" data-k="'+k+'" value="'+(p[k]!=null?p[k]:'')+'" placeholder="'+(ph||'')+'">';
+  let h='<button class="mclose" onclick="closeProfile()">×</button><h2>내 프로필</h2><div class="sub">이 브라우저에만 저장되며 외부로 전송되지 않습니다.</div>'+
+    '<div class="legend"><span class="rq">필수 (자격·소득 판정)</span><span>나머지는 선택</span></div><div class="form-grid">';
+  h+='<div class="fgroup">기본 (필수)</div>';
+  h+='<div class="fld req full"><label>세대 전원 무주택인가요?</label>'+seg('noHome',p.noHome,[[true,'무주택'],[false,'주택 보유']])+'</div>';
+  h+='<div class="fld req"><label>청약통장 보유</label>'+seg('hasAccount',p.hasAccount,[[true,'보유'],[false,'없음']])+'</div>';
+  h+='<div class="fld req"><label>맞벌이 여부</label>'+seg('dualIncome',p.dualIncome,[[true,'맞벌이'],[false,'외벌이']])+'</div>';
+  h+='<div class="fld req"><label>가구원 수(본인 포함)</label>'+num('householdSize','예: 3')+'</div>';
+  h+='<div class="fld req"><label>세대 월평균소득(만원)</label>'+num('monthlyIncome','세전, 만원')+'</div>';
+  h+='<div class="fgroup">혼인 (필수)</div>';
+  h+='<div class="fld req"><label>혼인 상태</label>'+seg('marital',p.marital,[['미혼','미혼'],['예비','예비(결혼예정)'],['기혼','기혼']])+'</div>';
+  h+='<div class="fld"><label>결혼 예정 시기 (예비)</label><select data-k="marryPlan"><option value="">선택</option>'+['1년 이내','2년 이내','3년 이내','미정'].map(o=>'<option '+(p.marryPlan===o?'selected':'')+'>'+o+'</option>').join('')+'</select></div>';
+  h+='<div class="fld full"><label>혼인기간(개월) — 기혼</label>'+num('marriageMonths','예: 30 (84=7년, 24=2년)')+'</div>';
+  h+='<div class="fgroup">특별공급 관련</div>';
+  h+='<div class="fld"><label>미성년 자녀 수</label>'+num('minorChildren','명')+'</div>';
+  h+='<div class="fld"><label>2년 내 출생·임신 자녀(신생아)</label>'+seg('newborn',p.newborn,[[true,'있음'],[false,'없음']])+'</div>';
+  h+='<div class="fld"><label>과거 주택 소유 이력</label>'+seg('everOwned',p.everOwned,[[false,'없음'],[true,'있음']])+'</div>';
+  h+='<div class="fld"><label>소득세 5년 이상 납부</label>'+seg('taxYears5',p.taxYears5,[[true,'예'],[false,'아니오']])+'</div>';
+  h+='<div class="fld full"><label>세대 과거 특별공급 당첨 이력</label>'+seg('pastSpecial',p.pastSpecial,[[false,'없음'],[true,'있음']])+'</div>';
+  h+='<div class="fgroup">청약통장 세부</div>';
+  h+='<div class="fld"><label>통장 가입기간(개월)</label>'+num('acctMonths','예: 36')+'</div>';
+  h+='<div class="fld"><label>통장 납입 횟수</label>'+num('acctCount','회')+'</div>';
+  h+='<div class="fgroup">가점·추첨·거주 (선택)</div>';
+  h+='<div class="fld"><label>무주택 기간(년)</label>'+num('noHomeYears','년')+'</div>';
+  h+='<div class="fld"><label>부양가족 수</label>'+num('dependents','명')+'</div>';
+  h+='<div class="fld"><label>세대주 여부</label>'+seg('householder',p.householder,[[true,'세대주'],[false,'세대원']])+'<span class="hint">규제지역 1순위 요건</span></div>';
+  h+='<div class="fld"><label>세대 부동산가액(만원)</label>'+num('realEstate','만원')+'<span class="hint">소득 초과 시 추첨 자산요건</span></div>';
+  h+='</div><div class="warnmsg" id="pwarn"></div><div class="formfoot"><button class="btn ghost" onclick="closeProfile()">취소</button><button class="btn" onclick="submitProfile()">저장</button></div>';
+  document.getElementById('profileModal').innerHTML=h;
+  document.getElementById('profileOverlay').classList.add('show');
+  document.querySelectorAll('#profileModal .seg').forEach(sg=>{ sg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ sg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); })); });
+}
+function readSeg(name){ const sg=document.querySelector('#profileModal .seg[data-seg="'+name+'"]'); if(!sg) return undefined; const on=sg.querySelector('button.on'); if(!on) return undefined; const v=on.dataset.v; if(v==='true')return true; if(v==='false')return false; return v; }
+function submitProfile(){
+  const p={};
+  document.querySelectorAll('#profileModal input[data-k], #profileModal select[data-k]').forEach(el=>{ const k=el.dataset.k; const v=el.value; if(v!=='') p[k]= el.type==='number'? +v : v; });
+  ['noHome','householder','marital','dualIncome','newborn','everOwned','taxYears5','hasAccount','pastSpecial'].forEach(k=>{ const v=readSeg(k); if(v!==undefined) p[k]=v; });
+  const labels={noHome:'무주택 여부',marital:'혼인 상태',hasAccount:'청약통장 보유',householdSize:'가구원 수',monthlyIncome:'월평균소득',dualIncome:'맞벌이 여부'};
+  const missing=REQUIRED.filter(k=> p[k]===undefined || p[k]==='').map(k=>labels[k]);
+  const w=document.getElementById('pwarn');
+  if(missing.length){ w.style.display='block'; w.textContent='필수 항목을 입력해 주세요: '+missing.join(', '); return; }
+  saveProfile(p); closeProfile(); updateProfileStatus();
+}
+function closeProfile(){ document.getElementById('profileOverlay').classList.remove('show'); }
+function closeOverlay(){ document.getElementById('detailOverlay').classList.remove('show'); }
+document.getElementById('detailOverlay').addEventListener('click',e=>{ if(e.target.id==='detailOverlay') closeOverlay(); });
+document.getElementById('profileOverlay').addEventListener('click',e=>{ if(e.target.id==='profileOverlay') closeProfile(); });
+document.getElementById('openProfile').addEventListener('click',openProfileForm);
+function updateProfileStatus(){ const p=loadProfile(); const el=document.getElementById('pstatus');
+  if(!p){ el.textContent='아직 입력 전'; }
+  else { const g=gapScore(p); el.innerHTML='저장됨 · 예상 가점 <b>'+g.total+'</b>/84'+(profileComplete(p)?'':' · <span style="color:#c77700">필수 미완성</span>'); } }
+
+document.getElementById("snapdate").textContent = "기준일 " + SNAPSHOT_DATE;
+updateProfileStatus();
+render();
+</script>
+</body>
+</html>
