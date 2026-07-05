@@ -144,25 +144,15 @@
 
     <section class="section">
       <h2>Projects</h2>
-      <div class="grid" id="projects"></div>
+      <div class="grid">
+    <a class="card" href="./docs/"><strong>docs</strong><small>docs</small></a>
+    <a class="card" href="./seoul-cheongyak-monitor/"><strong>seoul-cheongyak-monitor</strong><small>seoul-cheongyak-monitor</small></a>
+      </div>
     </section>
 
     <footer>
       Paths are stable per folder, for example <code>/seoul-cheongyak-monitor/</code>.
     </footer>
   </div>
-
-  <script>
-    const projects = [
-      { name: 'seoul-cheongyak-monitor', desc: '서울·수도권 청약 모니터', path: './seoul-cheongyak-monitor/' },
-    ];
-    const root = document.getElementById('projects');
-    root.innerHTML = projects.map((project) => `
-      <a class="card" href="${project.path}">
-        <strong>${project.name}</strong>
-        <small>${project.desc}</small>
-      </a>
-    `).join('');
-  </script>
 </body>
 </html>

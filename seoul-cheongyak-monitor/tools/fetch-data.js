@@ -72,9 +72,21 @@ async function build(){
         if (areas.length){ const mn=Math.min(...areas), mx=Math.max(...areas); area = '전용 '+(mn===mx?mn:mn+'~'+mx)+'㎡'; }
         const prices = md.map(x=>+x.LTTOT_TOP_AMOUNT||0);
         if (prices.length) maxEok = Math.round(Math.max(...prices)/1000)/10;
-        units = md.map(x=>[String(areaNum(x.HOUSE_TY)), (+x.SUPLY_HSHLDCO||0), (+x.SPSPLY_HSHLDCO||0)]);
+        units = md.map(x=>[String(areaNum(x.HOUSE_TY)), (+x.SUPLY_HSHLDCO||0), (+x.SPSPLY_HSHLDCO||0), Math.round((+x.LTTOT_TOP_AMOUNT||0)/1000)/10]);
       }
     }catch(e){ /* 주택형별 없음(임대 등) */ }
+
+    // 경쟁률 (청약 종료 단지만): 해당지역(01) 1순위 기준
+    let cmpet = null;
+    try{
+      if (d.RCEPT_ENDDE && d.RCEPT_ENDDE < ymd(new Date())){
+        const cr = await api('/getAPTLttotPblancCmpet', { perPage:100, 'cond[HOUSE_MANAGE_NO::EQ]': hm });
+        const cd = (cr.data||[]).filter(x=> x.RESIDE_SECD==='01' && +x.SUBSCRPT_RANK_CODE===1);
+        const rows = cd.map(x=>[String(areaNum(x.HOUSE_TY)), parseFloat(x.CMPET_RATE)]).filter(r=>!isNaN(r[1]));
+        if (rows.length){ cmpet = { max: Math.max.apply(null, rows.map(r=>r[1])), rows: rows }; }
+        else if (cd.length){ cmpet = { status:'미달', note:'해당지역 대부분 미달(경쟁 없음)' }; }
+      }
+    }catch(e){ /* 경쟁률 미공개 */ }
 
     const gubun = d.HOUSE_DTL_SECD_NM === '민영' ? '민영' : '국민';
     let docType, docUrl;
@@ -89,7 +101,7 @@ async function build(){
       moveIn: ym(d.MVN_PREARNGE_YM),
       regSpec: d.SPECLT_RDN_EARTH_AT === 'Y', regAdj: d.MDAT_TRGET_AREA_SECD === 'Y',
       priceCap: d.PARCPRC_ULS_AT === 'Y', bigLand: d.LRSCL_BLDLND_AT === 'Y', publicLaw: d.PUBLIC_HOUSE_SPCLW_APPLC_AT === 'Y',
-      area, maxEok, url: d.PBLANC_URL, docType, docUrl, spp, units
+      area, maxEok, url: d.PBLANC_URL, docType, docUrl, spp, units, cmpet
     });
   }
   // 최신 공고일 순

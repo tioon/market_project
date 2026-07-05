@@ -200,19 +200,22 @@ const SNAPSHOT = [
   regSpec:false, regAdj:false, priceCap:false, bigLand:false, publicLaw:false, area:"전용 85㎡", maxEok:6.5,
   url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000281&pblancNo=2026000281",
   docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000281&pblancNo=2026000281&atchmnflSeqNo=1852426&atchmnflSn=5",
-  spp:{nw:0, first:0, nb:0, gen:8, total:0}, units:null},
+  spp:{nw:0, first:0, nb:0, gen:8, total:0}, units:null,
+  cmpet:{status:'미달', note:'해당지역 대부분 미달(경쟁 없음)'}},
  {region:"서울", gubun:"민영", htype:"민영", name:"장위 푸르지오 마크원", builder:"(주)대우건설", phone:"1551-6837",
   notice:"2026-06-19", start:"2026-06-29", end:"2026-07-02", spStart:"2026-06-29", win:"2026-07-08", tot:1032, moveIn:"2030-09",
   regSpec:true, regAdj:true, priceCap:false, bigLand:false, publicLaw:false, area:"전용 40~114㎡", maxEok:21.7,
   url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000275&pblancNo=2026000275",
   docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000275&pblancNo=2026000275&atchmnflSeqNo=1861138&atchmnflSn=4",
-  spp:{nw:148, first:63, nb:96, gen:510, total:522}, units:null},
+  spp:{nw:148, first:63, nb:96, gen:510, total:522}, units:null,
+  cmpet:{max:81.2, rows:[["46.9",81.2],["51.9",78.4],["59.9",16.9],["74.9",5.3],["84.9",4.4]]}},
  {region:"서울", gubun:"민영", htype:"민영", name:"드파인 아르티아", builder:"에스케이에코플랜트(주)", phone:"1644-4041",
   notice:"2026-06-19", start:"2026-06-29", end:"2026-07-02", spStart:"2026-06-29", win:"2026-07-08", tot:171, moveIn:"2029-11",
   regSpec:true, regAdj:true, priceCap:false, bigLand:false, publicLaw:false, area:"전용 60~110㎡", maxEok:30.6,
   url:"https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=2026000241&pblancNo=2026000241",
   docType:"pdf", docUrl:"https://static.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2026000241&pblancNo=2026000241&atchmnflSeqNo=1854050&atchmnflSn=5",
-  spp:{nw:23, first:11, nb:15, gen:85, total:86}, units:null}
+  spp:{nw:23, first:11, nb:15, gen:85, total:86}, units:null,
+  cmpet:{max:50.1, rows:[["59.9",50.1],["59.9(B)",36.7],["74.9",9.1],["84.9",16.2],["109",1.8]]}}
 ];
 /*SNAPSHOT_END*/
 
@@ -512,7 +515,7 @@ function render(){
     h+='<tr data-i="'+r._i+'"><td><span class="badge '+r._s.cls+'">'+r._s.label+'</span></td>'+
       '<td><span class="rtag">'+r.region+'</span>'+(isRegulated(r)?'<span class="reg">규제</span>':'')+'</td>'+
       '<td><div class="name">'+esc(r.name)+'<span class="arr">자격보기 ›</span></div>'+
-        '<div class="meta"><span class="gubun">'+esc(r.gubun)+' · '+esc(r.htype)+'</span> · '+esc(r.builder)+'</div></td>'+
+        '<div class="meta"><span class="gubun">'+esc(r.gubun)+' · '+esc(r.htype)+'</span> · '+esc(r.builder)+(r.maxEok?' · <b>최고 '+r.maxEok+'억</b>':'')+'</div></td>'+
       '<td class="hide-sm">'+esc(r.start)+' ~ '+esc(r.end)+'<div class="meta">공고 '+esc(r.notice)+'</div></td>'+
       '<td class="hide-sm">'+esc(r.win)+'</td></tr>';
   }
@@ -598,6 +601,71 @@ function judgmentCards(p, L){
   return h;
 }
 
+/* ===== 청약 경쟁률 (해당지역 1순위) ===== */
+function cmpetSection(L){
+  const s = statusOf(L);
+  let h='<div class="sec"><h3>청약 경쟁률</h3>';
+  if(L.cmpet){
+    if(L.cmpet.status==='미달'){
+      h+='<div class="incline inc-ok">'+esc(L.cmpet.note||'해당지역 대부분 미달(경쟁 없음)')+' — 미달 주택형은 2순위·기타지역으로 넘어갑니다.</div>';
+    } else {
+      h+='<div class="rqline"><b>해당지역 1순위</b> 최고 <b>'+L.cmpet.max+' : 1</b> (청약홈 공식 집계)</div>';
+      if(L.cmpet.rows && L.cmpet.rows.length){
+        h+='<table class="inc"><thead><tr><th>전용㎡</th><th>경쟁률(해당지역 1순위)</th></tr></thead><tbody>';
+        for(const r of L.cmpet.rows) h+='<tr><td>'+esc(r[0])+'</td><td>'+r[1]+' : 1</td></tr>';
+        h+='</tbody></table>';
+      }
+      h+='<div class="rqline" style="color:#888">· 당첨 가점 커트라인은 발표 후 시차를 두고 공개됩니다(청약홈 확인).</div>';
+    }
+  } else if(s.key==='done'){
+    h+='<div class="rqline">경쟁률이 아직 이 페이지에 반영되지 않았습니다. GitHub 배포 시 자동 수집되거나, 위 「청약홈 상세페이지」에서 확인하세요.</div>';
+  } else {
+    h+='<div class="rqline">아직 청약 전이라 경쟁률이 없습니다 — <b>청약 완료 후 공개</b>됩니다. (마감 뒤 청약홈에서 확인)</div>';
+  }
+  h+='</div>'; return h;
+}
+/* ===== 자금·대출 진단 (참고용) ===== */
+function mstr(n){ return Math.round(n).toLocaleString('ko-KR'); }
+function financeSection(p, L){
+  let h='<div class="sec"><h3>자금·대출 진단 (참고용)</h3>';
+  if(!L.maxEok){ return h+'<div class="rqline">이 단지는 분양가 데이터가 없어 계산을 생략합니다.</div></div>'; }
+  const price = L.maxEok*10000; // 만원 (최고가 기준)
+  h+='<div class="factbox"><div class="frow"><span class="fk">분양가</span><span class="fv">최고 약 '+L.maxEok+'억 ('+mstr(price)+'만원, 최고가 기준) · 주택형별 세부가는 공고문</span></div></div>';
+  if(!p || p.income==null || p.income===''){
+    h+='<div class="incline inc-chk" style="margin-top:8px">프로필의 "자금·대출" 항목(보유 현금·연소득 등)을 입력하면, 이 단지 기준 <b>필요 자기자본·가능 대출</b>을 계산해 드립니다.</div>';
+    h+='<div style="margin-top:8px"><button class="btn" onclick="openProfileForm()">자금 정보 입력</button></div></div>'; return h;
+  }
+  const ltv=(p.ltvPct!=null&&p.ltvPct!=='')?+p.ltvPct:(isRegulated(L)?50:70);
+  const dsr=(p.dsrPct!=null&&p.dsrPct!=='')?+p.dsrPct:40;
+  const rate=(p.rate!=null&&p.rate!=='')?+p.rate:4.0;
+  const years=(p.loanYears!=null&&p.loanYears!=='')?+p.loanYears:30;
+  const income=+p.income; const debtAnnual=(p.debtAnnual!=null&&p.debtAnnual!=='')?+p.debtAnnual:0;
+  const cash=(p.cash!=null&&p.cash!=='')?+p.cash:null;
+  const ltvLoan=price*ltv/100;
+  const availAnnual=Math.max(0, income*dsr/100 - debtAnnual);
+  const r=rate/100/12, n=years*12;
+  const dsrLoan = r>0 ? (availAnnual/12)*(1-Math.pow(1+r,-n))/r : (availAnnual/12)*n;
+  const loan=Math.min(ltvLoan, dsrLoan);
+  const limiter = (loan===ltvLoan)?'LTV 한도':'DSR 한도';
+  const need=Math.max(0, price-loan);
+  const rows=[
+    ['LTV 한도 대출','LTV '+ltv+'% × 분양가'+(p.ltvPct?'':(isRegulated(L)?' (규제 자동50)':' (비규제 자동70)')), mstr(ltvLoan)+'만'],
+    ['DSR 한도 대출','DSR '+dsr+'% · 금리 '+rate+'% · '+years+'년', mstr(dsrLoan)+'만'],
+    ['가능 대출','둘 중 작은 값 ('+limiter+' 제약)', '<b>'+mstr(loan)+'만</b>'],
+    ['필요 자기자본','분양가 − 가능 대출', '<b>'+mstr(need)+'만</b>']
+  ];
+  h+='<table class="inc"><tbody>';
+  for(var i=0;i<rows.length;i++) h+='<tr><td>'+rows[i][0]+'</td><td>'+rows[i][1]+'</td><td>'+rows[i][2]+'</td></tr>';
+  h+='</tbody></table>';
+  if(cash!=null){
+    const gap=cash-need;
+    h+= gap>=0
+      ? '<div class="incline inc-ok">보유 현금 '+mstr(cash)+'만 ≥ 필요 자기자본 '+mstr(need)+'만 → 자금상 매수 가능(여유 약 '+mstr(gap)+'만). 단, 계약금·중도금 납부 일정과 실제 대출 승인은 은행 확인 필요.</div>'
+      : '<div class="incline inc-no">보유 현금 '+mstr(cash)+'만 < 필요 자기자본 '+mstr(need)+'만 → 약 '+mstr(-gap)+'만 부족.</div>';
+  }
+  h+='<div class="disc">※ LTV·DSR·금리·기간은 입력/가정값 기준 <b>단순 추정</b>입니다. 실제 한도는 규제지역·보유주택수·생애최초/신혼 우대·스트레스DSR·중도금대출 한도(분양가·세대수 기준)·특례보금자리 등에 따라 크게 달라지며, 최종 한도는 은행에서 확인해야 합니다. 투자·금융 판단은 전문가와 상의하세요.</div>';
+  h+='</div>'; return h;
+}
 function openDetail(i){
   const L = SNAPSHOT[i]; const p = loadProfile(); const s = statusOf(L);
   let h='<button class="mclose" onclick="closeOverlay()">×</button>';
@@ -610,6 +678,7 @@ function openDetail(i){
      '</div>'+
      '<div class="meta" style="margin-top:6px">※ 「모집공고문 PDF 원문」은 청약홈 공식 PDF를 새 창으로 엽니다(보안상 이 페이지 안에 직접 삽입은 불가). 공공(LH) 단지는 LH청약플러스에서 공고문을 제공합니다.</div>';
   h+='<div class="sec"><h3>공고 정보 (청약홈 API 실제값)</h3>'+condSummary(L)+'</div>';
+  h+= cmpetSection(L);
   h+='<div class="sec"><h3>특별공급·일반공급 가능 조건 &amp; 내 자격</h3>';
   h+='<div class="incline inc-chk" style="margin-bottom:10px">규제여부·배정 세대수·면적·소득 상한 금액은 <b>청약홈 API·주택공급규칙 실제값</b>입니다. 각 특공의 <b>가능 조건</b>을 먼저 보여주고, 프로필을 입력하면 조건별 <b>내 충족 여부(O/X)</b>가 함께 표시됩니다.</div>';
   if(!p){ h+='<div style="margin:0 0 10px"><button class="btn" onclick="closeOverlay();openProfileForm()">내 프로필 입력하고 충족 여부 보기</button></div>'; }
@@ -617,6 +686,7 @@ function openDetail(i){
   h+= judgmentCards(p,L);
   if(p) h+='<div style="margin-top:6px"><button class="btn ghost" onclick="openProfileForm()">프로필 수정</button></div>';
   h+='</div>';
+  h+= financeSection(p, L);
   h+='<div class="disc">※ 규제/물량/면적/일정은 청약홈 API 기준(갱신 시점). 소득 구간은 2025년 도시근로자 기준의 참고 계산이며, 나눔형·신혼희망타운의 자산기준, 지역우선 거주요건, 재당첨 제한, 부적격 사유 등은 공고문에 따라 달라집니다. 실제 청약 전 입주자모집공고 원문과 청약홈 「청약자격 진단」으로 확인하세요.</div>';
   document.getElementById('detailModal').innerHTML=h;
   document.getElementById('detailOverlay').classList.add('show');
@@ -659,6 +729,14 @@ function openProfileForm(){
   h+='<div class="fld"><label>세대 총자산(만원)</label>'+num('totalAssets','만원')+'<span class="hint">나눔형·신혼희망타운</span></div>';
   h+='<div class="fld"><label>과거 청약 당첨 이력</label>'+seg('pastWin',p.pastWin,[[false,'없음'],[true,'있음']])+'</div>';
   h+='<div class="fld"><label>당첨 시기(YYYYMM)</label>'+num('pastWinYM','예: 202305')+'<span class="hint">재당첨 제한 확인</span></div>';
+  h+='<div class="fgroup">자금·대출 (선택 — 대출 진단용)</div>';
+  h+='<div class="fld"><label>보유 현금·자기자본(만원)</label>'+num('cash','예: 20000')+'</div>';
+  h+='<div class="fld"><label>부부합산 연소득(만원)</label>'+num('income','예: 8000')+'</div>';
+  h+='<div class="fld"><label>기존 대출 연 원리금(만원)</label>'+num('debtAnnual','없으면 0')+'</div>';
+  h+='<div class="fld"><label>예상 대출금리(%)</label><input type="number" min="0" step="0.1" data-k="rate" value="'+(p.rate!=null?p.rate:'')+'" placeholder="예: 4.0"><span class="hint">기본 4.0</span></div>';
+  h+='<div class="fld"><label>대출기간(년)</label>'+num('loanYears','예: 30')+'</div>';
+  h+='<div class="fld"><label>LTV(%) — 비우면 자동</label>'+num('ltvPct','규제50/비규제70')+'</div>';
+  h+='<div class="fld"><label>DSR(%)</label>'+num('dsrPct','기본 40')+'</div>';
   h+='</div><div class="warnmsg" id="pwarn"></div><div class="formfoot"><button class="btn ghost" onclick="closeProfile()">취소</button><button class="btn" onclick="submitProfile()">저장</button></div>';
   document.getElementById('profileModal').innerHTML=h;
   document.getElementById('profileOverlay').classList.add('show');
