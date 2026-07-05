@@ -5,7 +5,9 @@ on:
     - cron: "0 21 * * *"   # 매일 06:00 KST (UTC 21:00)
   workflow_dispatch: {}      # 수동 실행 버튼
   push:
-    branches: [ main ]       # 배포 직후 1회 생성
+    branches: [ main ]
+    paths-ignore:
+      - 'seoul-cheongyak-monitor/listings.json'   # 봇 커밋으로 인한 무한 루프 방지
 
 permissions:
   contents: write
@@ -21,11 +23,11 @@ jobs:
       - name: listings.json 생성
         env:
           SERVICE_KEY: ${{ secrets.SERVICE_KEY }}
-        run: node tools/fetch-data.js
+        run: node seoul-cheongyak-monitor/tools/fetch-data.js
       - name: 변경분 커밋
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add listings.json
+          git add seoul-cheongyak-monitor/listings.json
           git diff --staged --quiet || git commit -m "chore: 청약 데이터 자동 갱신 ($(date -u +%Y-%m-%d))"
           git push
