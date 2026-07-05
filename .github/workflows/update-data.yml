@@ -15,19 +15,24 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    env:
+      SERVICE_KEY: ${{ secrets.SERVICE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: listings.json 생성
-        env:
-          SERVICE_KEY: ${{ secrets.SERVICE_KEY }}
+        if: ${{ env.SERVICE_KEY != '' }}
         run: node seoul-cheongyak-monitor/tools/fetch-data.js
       - name: 변경분 커밋
+        if: ${{ env.SERVICE_KEY != '' }}
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add seoul-cheongyak-monitor/listings.json
           git diff --staged --quiet || git commit -m "chore: 청약 데이터 자동 갱신 ($(date -u +%Y-%m-%d))"
           git push
+      - name: SERVICE_KEY 없음
+        if: ${{ env.SERVICE_KEY == '' }}
+        run: echo "SERVICE_KEY secret이 없어 listings.json 갱신을 건너뜁니다."
