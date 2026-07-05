@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
 OWNER="${OWNER:-tioon}"
 REPO="${REPO:-market_project}"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -208,7 +210,7 @@ if ! git -C "$ROOT" diff --cached --quiet; then
   git -C "$ROOT" commit -m "chore: initialize market project pages" >/dev/null
 fi
 
-git -C "$ROOT" push -u origin main --force
+git -C "$ROOT" push -u origin main
 
 if ! gh api "repos/$OWNER/$REPO/pages" >/dev/null 2>&1; then
   gh api -X POST "repos/$OWNER/$REPO/pages" -f 'source[branch]=main' -f 'source[path]=/' >/dev/null
